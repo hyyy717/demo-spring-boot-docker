@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập hệ thống</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="fw-bold" style="color: #d97706;">👋 CHÀO MỪNG</h2>
+        <p class="text-muted">Đăng nhập để vào không gian sách</p>
+    </div>
+    <div class="card-body p-4">
+
+        <div th:if="${param.locked}" class="alert alert-danger text-center fw-bold shadow-sm" style="animation: slideDown 0.5s;">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i><br>
+            Tài khoản của bạn đã bị Admin khóa và phiên đăng nhập bị hủy! Vui lòng liên hệ hỗ trợ.
+        </div>
+
+        <div th:if="${param.error}" class="alert alert-danger text-center fw-bold shadow-sm">
+            <th:block th:if="${session['SPRING_SECURITY_LAST_EXCEPTION'] != null}">
+                <span th:if="${#strings.containsIgnoreCase(session['SPRING_SECURITY_LAST_EXCEPTION'].message, 'disabled')}">
+                    <i class="bi bi-lock-fill fs-5"></i><br>
+                    Tài khoản của bạn đã bị khóa! Không thể đăng nhập.
+                </span>
+                <span th:unless="${#strings.containsIgnoreCase(session['SPRING_SECURITY_LAST_EXCEPTION'].message, 'disabled')}">
+                    Tài khoản hoặc mật khẩu không chính xác!
+                </span>
+            </th:block>
+            <th:block th:if="${session['SPRING_SECURITY_LAST_EXCEPTION'] == null}">
+                Tài khoản hoặc mật khẩu không chính xác!
+            </th:block>
+        </div>
+
+        <div th:if="${param.logout}" class="alert alert-info text-center">Đã đăng xuất thành công.</div>
+        <div th:if="${param.success}" class="alert alert-success text-center">Đăng ký thành công! Hãy đăng nhập.</div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tài khoản (Gmail / Admin)</label>
+                <input type="text" name="username" class="form-control" placeholder="Nhập tài khoản..." required autofocus>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Mật khẩu</label>
+                <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu..." required>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-login btn-lg">Đăng nhập</button>
+            </div>
+            <div class="text-center mt-3">
+                <span class="text-muted">Chưa có tài khoản?</span>
+                <a th:href="@{/register}" class="text-decoration-none fw-bold" style="color: #d97706;">Đăng ký ngay</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

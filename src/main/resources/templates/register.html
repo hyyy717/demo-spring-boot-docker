@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký tài khoản</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            /* Đồng bộ hình nền với trang Đăng nhập và Home */
+            background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 40px 0;
+            position: relative;
+        }
+        body::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5); z-index: -1;
+        }
+
+        .card {
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            width: 100%; max-width: 650px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border: none;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 2px dashed #e2e8f0;
+            text-align: center;
+            padding: 30px 0 20px;
+        }
+
+        /* NÚT BẤM TÔNG MÀU CAM HỔ PHÁCH (Đồng bộ Login) */
+        .btn-glow {
+            background: linear-gradient(135deg, #fbd38d 0%, #d97706 100%);
+            color: white; border: none; border-radius: 12px;
+            font-weight: bold; font-size: 1.1rem; padding: 12px;
+            position: relative; overflow: hidden; z-index: 1;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .btn-glow::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); transition: all 0.6s ease; z-index: -1;
+        }
+        .btn-glow:hover:not(:disabled)::before { left: 150%; }
+        .btn-glow:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(217, 119, 6, 0.4);
+            color: white;
+        }
+        .btn-glow:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
+
+        .form-control, .form-select {
+            border-radius: 10px; transition: 0.3s; padding: 10px 15px;
+            border: 1px solid #ced4da;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.2); border-color: #d97706;
+        }
+
+        .req-list { list-style-type: none; padding: 15px; font-size: 0.85rem; background: #fffcf5; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 0; }
+        .req-list li { color: #ef4444; margin-bottom: 4px; transition: 0.3s; }
+        .req-list li::before { content: '❌ '; }
+        .req-list li.valid { color: #10b981; font-weight: bold; }
+        .req-list li.valid::before { content: '✅ '; }
+
+        .section-title { color: #b45309; font-weight: 800; border-left: 4px solid #d97706; padding-left: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="fw-bold" style="color: #d97706;"><i class="bi bi-person-plus-fill"></i> TẠO TÀI KHOẢN MỚI</h2>
+        <p class="text-muted mb-0">Hoàn thiện thông tin để tham gia không gian sách</p>
+    </div>
+    <div class="card-body p-4 p-md-5">
+
+        <div th:if="${error}" class="alert alert-danger text-center fw-bold shadow-sm" th:text="${error}"></div>
+
+        <form th:action="@{/register}" th:object="${user}" method="post" id="registerForm">
+
+            <h5 class="section-title mb-3">1. Thông tin đăng nhập</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Tài khoản Gmail</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-warning"><i class="bi bi-envelope"></i></span>
+                        <input type="email" th:field="*{username}" id="gmail" class="form-control border-start-0 ps-0" placeholder="vidu@gmail.com" required>
+                    </div>
+                    <div id="emailError" class="text-danger mt-1" style="font-size: 0.8rem; display: none;">Chỉ chấp nhận đuôi @gmail.com</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Mật khẩu</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-warning"><i class="bi bi-shield-lock"></i></span>
+                        <input type="password" th:field="*{password}" id="password" class="form-control border-start-0 ps-0" maxlength="8" placeholder="Tối đa 8 ký tự..." required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <ul class="req-list shadow-sm">
+                    <li id="req-upper">Có ít nhất 1 chữ IN HOA (A-Z)</li>
+                    <li id="req-lower">Có ít nhất 1 chữ thường (a-z)</li>
+                    <li id="req-special">Có ít nhất 1 ký tự đặc biệt (!@#$...)</li>
+                    <li id="req-space" class="valid">Không chứa khoảng trắng</li>
+                    <li id="req-length">Độ dài: <span id="char-count" class="fw-bold">0</span>/8 ký tự</li>
+                </ul>
+            </div>
+
+            <h5 class="section-title mb-3">2. Thông tin cá nhân</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Họ và Tên</label>
+                    <input type="text" th:field="*{fullName}" id="fname" class="form-control" placeholder="Vd: Nguyễn Văn A" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Số điện thoại</label>
+                    <input type="tel" th:field="*{phone}" id="fphone" class="form-control" placeholder="Vd: 0901234567" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Ngày sinh</label>
+                    <input type="date" th:field="*{dateOfBirth}" id="fdob" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Giới tính</label>
+                    <select th:field="*{gender}" id="fgender" class="form-select" required>
+                        <option value="" disabled selected>-- Chọn giới tính --</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Địa chỉ giao hàng mặc định</label>
+                <input type="text" th:field="*{address}" id="faddress" class="form-control" placeholder="Số nhà, tên đường, phường/xã..." required>
+            </div>
+
+            <input type="hidden" th:field="*{email}" id="hiddenEmail">
+
+            <div class="d-grid mt-4">
+                <button type="submit" id="submitBtn" class="btn btn-glow" disabled>ĐĂNG KÝ NGAY</button>
+            </div>
+            <div class="text-center mt-3">
+                <span class="text-muted">Đã có tài khoản?</span>
+                <a th:href="@{/login}" class="text-decoration-none fw-bold" style="color: #d97706;">Đăng nhập tại đây</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const emailInput = document.getElementById('gmail');
+    const emailError = document.getElementById('emailError');
+    const pwdInput = document.getElementById('password');
+    const hiddenEmail = document.getElementById('hiddenEmail');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const fname = document.getElementById('fname');
+    const fphone = document.getElementById('fphone');
+    const fdob = document.getElementById('fdob');
+    const fgender = document.getElementById('fgender');
+    const faddress = document.getElementById('faddress');
+
+    const reqUpper = document.getElementById('req-upper');
+    const reqLower = document.getElementById('req-lower');
+    const reqSpecial = document.getElementById('req-special');
+    const reqSpace = document.getElementById('req-space');
+    const reqLength = document.getElementById('req-length');
+    const charCount = document.getElementById('char-count');
+
+    function validateForm() {
+        const pwd = pwdInput.value;
+        const email = emailInput.value;
+
+        // 1. Kiểm tra Email @gmail.com
+        const isEmailValid = email.endsWith('@gmail.com');
+        emailError.style.display = (!isEmailValid && email.length > 0) ? 'block' : 'none';
+
+        // 2. Logic Mật khẩu
+        const hasUpper = /[A-Z]/.test(pwd);
+        const hasLower = /[a-z]/.test(pwd);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
+        const noSpace = !/\s/.test(pwd);
+        const isValidLength = pwd.length > 0 && pwd.length <= 8;
+
+        reqUpper.className = hasUpper ? 'valid' : '';
+        reqLower.className = hasLower ? 'valid' : '';
+        reqSpecial.className = hasSpecial ? 'valid' : '';
+        reqSpace.className = (noSpace && pwd.length > 0) ? 'valid' : (pwd.length === 0 ? 'valid' : '');
+        reqLength.className = isValidLength ? 'valid' : '';
+        charCount.innerText = pwd.length;
+
+        // 3. Kiểm tra điền đủ thông tin cá nhân
+        const isInfoValid = fname.value.trim() !== '' &&
+            fphone.value.trim() !== '' &&
+            fdob.value !== '' &&
+            fgender.value !== '' &&
+            faddress.value.trim() !== '';
+
+        // Kích hoạt nút bấm
+        if (isEmailValid && hasUpper && hasLower && hasSpecial && noSpace && isValidLength && isInfoValid) {
+            submitBtn.disabled = false;
+            hiddenEmail.value = email;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // Lắng nghe sự kiện gõ phím
+    [pwdInput, emailInput, fname, fphone, faddress].forEach(el => el.addEventListener('input', validateForm));
+    [fdob, fgender].forEach(el => el.addEventListener('change', validateForm));
+</script>
+</body>
+</html>

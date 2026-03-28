@@ -1,0 +1,81 @@
+body {
+    /* Hình nền không gian sách ấm cúng */
+    background: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    margin: 0;
+}
+
+/* Lớp phủ màu tối để làm nổi bật form */
+body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: -1;
+}
+
+.card {
+    /* Hiệu ứng kính mờ Glassmorphism */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 100%;
+    max-width: 450px;
+    margin: 15px;
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 2px dashed #e2e8f0;
+    text-align: center;
+    padding-top: 30px;
+    border-radius: 20px 20px 0 0;
+}
+
+.btn-login, .btn-register {
+    background: #d97706; /* Màu cam ấm áp của gỗ/sách */
+    color: white;
+    border: none;
+    transition: 0.3s;
+    font-weight: bold;
+}
+
+.btn-login:hover, .btn-register:hover:not(:disabled) {
+    background: #b45309;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(217, 119, 6, 0.3);
+}
+
+.btn-register:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25);
+    border-color: #d97706;
+}
+
+/* Style cho danh sách điều kiện mật khẩu (Trang Đăng ký) */
+.req-list {
+    list-style-type: none;
+    padding-left: 0;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+.req-list li { color: #dc3545; margin-bottom: 5px; transition: all 0.3s ease; }
+.req-list li::before { content: '❌ '; }
+.req-list li.valid { color: #198754; font-weight: 600; }
+.req-list li.valid::before { content: '✅ '; }

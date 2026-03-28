@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Người Dùng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <style>
+        body {
+            background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover; font-family: 'Segoe UI', sans-serif; min-height: 100vh; position: relative;
+        }
+        body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.45); z-index: -1; }
+        .admin-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.6); }
+        .table-custom { background: white; border-radius: 12px; overflow: hidden; }
+        .table thead { background: linear-gradient(135deg, #d97706, #b45309); color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom w-100">
+    <div class="container">
+        <a class="navbar-brand" href="/home"><i class="bi bi-book-half me-1"></i> BOOKSTORE</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item me-4 fw-bold" style="color: #4b5563;">Xin chào, <span style="color: #d97706;" sec:authentication="name"></span>!</li>
+                <li class="nav-item me-2"><a class="btn btn-sm" style="background: #1e293b; color: white; border-radius: 8px; padding: 6px 15px;" href="/admin/add"><i class="bi bi-plus-lg"></i> Thêm sách</a></li>
+                <li class="nav-item me-2"><a class="nav-link text-dark fw-bold" href="/admin/categories"><i class="bi bi-tags-fill"></i> Thể loại</a></li>
+                <li class="nav-item me-3"><a class="nav-link text-primary fw-bold" href="/admin/users"><i class="bi bi-people-fill"></i> Quản lý User</a></li>
+                <li class="nav-item"><form th:action="@{/logout}" method="post"><button type="submit" class="btn btn-sm btn-outline-danger">Đăng xuất</button></form></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid mt-4 px-4 flex-grow-1">
+    <div class="card admin-card p-4">
+        <h3 class="fw-bold mb-4" style="color: #b45309;"><i class="bi bi-people-fill"></i> QUẢN LÝ NGƯỜI DÙNG</h3>
+        <div class="table-responsive table-custom">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tài khoản</th>
+                    <th>Họ và tên</th>
+                    <th>SĐT</th>
+                    <th>Địa chỉ</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u, iterStat : ${users}">
+                    <td class="fw-bold text-muted" th:text="${iterStat.index + 1}">1</td>
+                    <td th:text="${u.username}">Email</td>
+                    <td class="fw-bold" th:text="${u.fullName != null ? u.fullName : 'Admin'}">Tên</td>
+                    <td th:text="${u.phone != null ? u.phone : 'N/A'}">SĐT</td>
+                    <td th:text="${u.address != null ? u.address : 'N/A'}">Địa chỉ</td>
+                    <td>
+                        <span th:if="${u.isActive}" class="badge bg-success">Hoạt động</span>
+                        <span th:unless="${u.isActive}" class="badge bg-danger">Bị khóa</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <form th:action="@{/admin/users/toggle-lock/{id}(id=${u.id})}" method="post">
+                                <button type="submit" class="btn btn-sm fw-bold" th:classappend="${u.isActive ? 'btn-outline-warning' : 'btn-outline-success'}" th:text="${u.isActive ? 'Khóa' : 'Mở'}"></button>
+                            </form>
+                            <a th:href="@{/admin/users/delete/{id}(id=${u.id})}" class="btn btn-sm btn-outline-danger fw-bold" onclick="return confirm('Xóa vĩnh viễn tài khoản này?')">Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    setInterval(function() {
+        fetch('/admin/users').then(r => r.text()).then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, 'text/html');
+            let newBody = doc.querySelector('tbody').innerHTML;
+            if (document.querySelector('tbody').innerHTML !== newBody) {
+                document.querySelector('tbody').innerHTML = newBody;
+            }
+        }).catch(e => console.error(e));
+    }, 3000);
+</script>
+</body>
+</html>

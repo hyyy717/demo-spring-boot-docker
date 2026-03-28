@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Cập Nhật Thông Tin Sách</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: url('https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+      background-size: cover; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      position: relative; min-height: 100vh; display: flex; align-items: center;
+    }
+    body::before { content: ""; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: -1; }
+    .edit-card {
+      background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+      border-radius: 20px; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      animation: slideUp 0.6s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .form-control, .form-select { border-radius: 10px; padding: 12px; border: 1px solid #ced4da; transition: 0.3s; }
+    .form-control:focus, .form-select:focus { box-shadow: 0 0 0 0.25rem rgba(217, 119, 6, 0.25); border-color: #d97706; }
+    .btn-custom { background: linear-gradient(135deg, #d97706, #b45309); color: white; border-radius: 10px; font-weight: bold; transition: 0.3s; border: none; }
+    .btn-custom:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(217, 119, 6, 0.4); color: white; }
+  </style>
+</head>
+<body>
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card edit-card p-5">
+        <h2 class="text-center mb-4" style="color: #d97706; font-weight: 800;"><i class="bi bi-pencil-square"></i> CẬP NHẬT SÁCH</h2>
+
+        <form th:action="@{/admin/edit/{id}(id=${book.id})}" th:object="${book}" method="post" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Tên sách</label>
+              <input type="text" th:field="*{title}" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-bold">Tác giả</label>
+              <input type="text" th:field="*{author}" class="form-control">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Giá tiền (VNĐ)</label>
+              <input type="number" th:field="*{price}" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Số lượng kho</label>
+              <input type="number" th:field="*{quantity}" class="form-control" required min="0">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-bold">Phân loại sách</label>
+              <select th:field="*{category}" class="form-select">
+                <option value="">-- Chọn Thể Loại --</option>
+                <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"></option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Mô tả nội dung</label>
+            <textarea th:field="*{description}" class="form-control" rows="4"></textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-bold">Hình ảnh bìa sách <span class="text-danger fw-normal">(Bỏ trống nếu không đổi ảnh)</span></label>
+            <input type="file" name="file" class="form-control" accept="image/*">
+          </div>
+
+          <div class="d-flex gap-3 mt-4">
+            <a href="/home" class="btn btn-secondary btn-lg w-50" style="border-radius: 10px;"><i class="bi bi-x-circle"></i> Hủy bỏ</a>
+            <button type="submit" class="btn btn-custom btn-lg w-50"><i class="bi bi-save"></i> Lưu cập nhật</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

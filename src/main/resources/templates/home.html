@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Thư Viện Sách Trực Tuyến</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <style>
+        .animate-bounce { animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="/home"><i class="bi bi-book-half me-1"></i> BOOKSTORE</a>
+
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item me-4 fw-bold" style="color: #4b5563;" sec:authorize="hasRole('USER')">
+                    Xin chào,
+                    <a href="/profile" class="text-decoration-none" style="color: #d97706; transition: 0.3s;" onmouseover="this.style.color='#b45309'" onmouseout="this.style.color='#d97706'">
+                        <span sec:authentication="name"></span>
+                    </a>!
+                </li>
+
+                <li class="nav-item me-4 fw-bold" style="color: #4b5563;" sec:authorize="hasRole('ADMIN')">
+                    Xin chào, <span style="color: #d97706;" sec:authentication="name"></span>!
+                </li>
+
+                <li class="nav-item me-2" sec:authorize="hasRole('ADMIN')">
+                    <a class="btn btn-sm" style="background: #1e293b; color: white; border-radius: 8px; padding: 6px 15px;" href="/admin/add">
+                        <i class="bi bi-plus-lg"></i> Thêm sách
+                    </a>
+                </li>
+
+                <li class="nav-item me-2" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" href="/admin/categories"><i class="bi bi-tags-fill fs-5"></i> Thể loại</a>
+                </li>
+
+                <li class="nav-item me-3" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" href="/admin/users"><i class="bi bi-people-fill fs-5"></i> Quản lý User</a>
+                </li>
+
+                <li class="nav-item me-1" sec:authorize="hasRole('USER')">
+                    <a class="nav-link" href="/cart">
+                        <i class="bi bi-cart3 fs-5"></i> Giỏ hàng
+                        <span id="headerCartBadge" class="badge bg-danger rounded-pill transition-all" th:text="${session.cartTotalQty != null ? session.cartTotalQty : 0}">0</span>
+                    </a>
+                </li>
+                <li class="nav-item me-3" sec:authorize="hasRole('USER')">
+                    <a class="nav-link" href="/history"><i class="bi bi-receipt fs-5"></i> Lịch sử</a>
+                </li>
+
+                <li class="nav-item">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 8px; padding: 6px 15px;"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="flex-grow-1">
+    <div class="container mt-4 mb-5">
+
+        <div th:if="${successMsg}" class="alert alert-success text-center fw-bold shadow-sm" th:text="${successMsg}"></div>
+        <div th:if="${errorMsg}" class="alert alert-danger text-center fw-bold shadow-sm" th:text="${errorMsg}"></div>
+
+        <div class="alert text-center mb-4 fw-bold shadow-sm" style="background: rgba(255, 255, 255, 0.9); color: #d97706; border: 1px dashed #d97706; backdrop-filter: blur(5px); border-radius: 15px;">
+            <i class="bi bi-stars me-2"></i> Khám phá không gian sách mới - Tri thức trong tầm tay bạn!
+        </div>
+
+        <div class="search-filter-wrapper mb-5 p-4 rounded-4" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0 text-warning" style="border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control border-0 shadow-none ps-0" placeholder="Bạn muốn tìm sách gì?..." style="border-radius: 0 12px 12px 0; font-size: 1rem;">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0 text-success" style="border-radius: 12px 0 0 12px;"><i class="bi bi-bookmark-star-fill"></i></span>
+                        <select id="categoryFilter" class="form-select border-0 shadow-none ps-0" style="border-radius: 0 12px 12px 0; font-size: 1rem;">
+                            <option value="all">Tất cả thể loại</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0 text-primary" style="border-radius: 12px 0 0 12px;"><i class="bi bi-currency-dollar"></i></span>
+                        <select id="priceSegment" class="form-select border-0 shadow-none ps-0" style="border-radius: 0 12px 12px 0; font-size: 1rem;">
+                            <option value="all">Mọi mức giá</option>
+                            <option value="0-50000">Dưới 50,000đ</option>
+                            <option value="50000-150000">50,000đ - 150,000đ</option>
+                            <option value="150000-300000">150,000đ - 300,000đ</option>
+                            <option value="300000-99999999">Trên 300,000đ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <button id="sortPriceBtn" class="btn w-100 fw-bold shadow-sm transition-all" style="background: linear-gradient(135deg, #fbd38d 0%, #d97706 100%); color: white; border: none; border-radius: 12px; height: 48px;" data-sort="asc">
+                        <i class="bi bi-sort-numeric-down fs-5 me-2"></i> Giá tăng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="data-signature" class="d-none">
+            <th:block th:each="book : ${books}">
+                <span th:text="${book.id + '_' + book.quantity + '|'}"></span>
+            </th:block>
+        </div>
+
+        <div id="cart-qty-hidden" class="d-none" th:text="${session.cartTotalQty != null ? session.cartTotalQty : 0}"></div>
+
+        <div class="row g-4" id="book-list">
+            <div th:each="book, iterStat : ${books}" class="col-md-6 col-lg-3 fade-in-item book-item"
+                 th:data-id="${book.id}"
+                 th:data-qty="${book.quantity}"
+                 th:data-title="${book.title != null ? book.title.toLowerCase() : ''}"
+                 th:data-author="${book.author != null ? book.author.toLowerCase() : ''}"
+                 th:data-category="${book.category != null ? book.category : 'all'}"
+                 th:data-price="${book.price != null ? book.price : 0}"
+                 th:style="'animation-delay: ' + (${iterStat.index} * 0.1) + 's;'">
+
+                <div class="card book-card h-100 border-0 shadow-sm" style="border-radius: 20px; overflow: hidden; transition: 0.3s; background: rgba(255, 255, 255, 0.9);">
+                    <div class="img-wrapper position-relative" style="background: #f8f9fa; height: 260px; display: flex; align-items: center; justify-content: center; padding: 15px;">
+                        <img th:if="${book.imageName != null and !book.imageName.isEmpty()}" th:src="@{'/images/' + ${book.imageName}}" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                        <div th:unless="${book.imageName != null and !book.imageName.isEmpty()}" class="text-muted text-center"><i class="bi bi-image fs-1 d-block"></i>Chưa có ảnh</div>
+                    </div>
+
+                    <div class="card-body d-flex flex-column p-4">
+                        <span class="badge mb-2 align-self-start" style="background: rgba(217, 119, 6, 0.1); color: #d97706; border: 1px solid rgba(217, 119, 6, 0.2);" th:text="${book.category != null and !book.category.isEmpty() ? book.category : 'Chưa phân loại'}">Thể loại</span>
+
+                        <h5 class="card-title fw-bold" style="color: #111827;" th:text="${book.title != null and !book.title.isEmpty() ? book.title : 'Sách đang cập nhật'}">Tên Sách</h5>
+                        <p class="card-text text-muted small fw-bold mb-1"><i class="bi bi-person-fill"></i> <span th:text="${book.author != null and !book.author.isEmpty() ? book.author : 'Chưa rõ'}">Tác giả</span></p>
+
+                        <p class="card-text text-muted small fw-bold mb-3">Kho: <span class="text-primary" th:text="${book.quantity}"></span> quyển</p>
+
+                        <h4 class="fw-bold mt-auto mb-3" style="color: #d97706;" th:text="${book.price != null ? #numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Liên hệ'}">Giá</h4>
+
+                        <div class="d-grid gap-2" sec:authorize="hasRole('USER')">
+                            <form th:action="@{/cart/add}" method="post" th:if="${book.quantity != null and book.quantity > 0}" class="d-flex gap-2">
+                                <input type="hidden" name="bookId" th:value="${book.id}">
+                                <input type="number" name="quantity" value="1" min="1" th:max="${book.quantity}" class="form-control text-center px-1 fw-bold" style="width: 70px; border-radius: 12px; border: 2px solid #d97706; color: #d97706;">
+                                <button type="submit" class="btn btn-warning flex-grow-1 fw-bold" style="background: #d97706; border: none; border-radius: 12px; color: white;"><i class="bi bi-cart-plus"></i> Mua</button>
+                            </form>
+                            <button th:unless="${book.quantity != null and book.quantity > 0}" class="btn btn-secondary w-100 py-2 fw-bold" style="border-radius: 12px;" disabled>Đã hết hàng</button>
+                        </div>
+
+                        <div sec:authorize="hasRole('ADMIN')" class="d-flex justify-content-between mt-3 pt-3 border-top">
+                            <a th:href="@{/admin/edit/{id}(id=${book.id})}" class="btn btn-sm w-50 me-1" style="background: #e2e8f0; color: #334155; font-weight: bold; border-radius: 10px;"><i class="bi bi-pencil-square"></i> Sửa</a>
+                            <a th:href="@{/admin/delete/{id}(id=${book.id})}" class="btn btn-sm w-50 ms-1" style="background: #fee2e2; color: #dc2626; font-weight: bold; border-radius: 10px;" onclick="return confirm('Bạn muốn xóa sách này?');"><i class="bi bi-trash"></i> Xóa</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="no-result-msg" class="col-12 text-center py-5" style="display: none;">
+                <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" width="100" class="mb-3 opacity-75">
+                <h4 class="text-white fw-bold">Không tìm thấy cuốn sách nào phù hợp!</h4>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer-custom py-5 mt-5" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); color: #f8fafc; border-top: 2px solid #d97706;">
+    <div class="container">
+        <p class="mb-0 text-center small opacity-50">&copy; 2026 BookStore System. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+    // ==========================================
+    // 1. LỌC SÁCH
+    // ==========================================
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const priceSegment = document.getElementById('priceSegment');
+    const sortPriceBtn = document.getElementById('sortPriceBtn');
+    const bookList = document.getElementById('book-list');
+    const noResultMsg = document.getElementById('no-result-msg');
+
+    function applyFilters() {
+        const searchText = searchInput.value.toLowerCase().trim();
+        const category = categoryFilter.value;
+        const priceVal = priceSegment.value;
+
+        let minP = 0, maxP = Infinity;
+        if (priceVal !== 'all') {
+            const parts = priceVal.split('-').map(Number);
+            minP = parts[0]; maxP = parts[1];
+        }
+
+        const sortOrder = sortPriceBtn.getAttribute('data-sort');
+        let books = Array.from(bookList.querySelectorAll('.book-item'));
+        let visibleCount = 0;
+
+        books.forEach(book => {
+            const title = book.getAttribute('data-title');
+            const author = book.getAttribute('data-author');
+            const bookCat = book.getAttribute('data-category');
+            const price = parseFloat(book.getAttribute('data-price'));
+
+            const matchesSearch = title.includes(searchText) || author.includes(searchText);
+            const matchesCategory = category === 'all' || bookCat === category;
+            const matchesPrice = price >= minP && price <= maxP;
+
+            if (matchesSearch && matchesCategory && matchesPrice) {
+                book.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                book.classList.add('d-none');
+            }
+        });
+
+        books.sort((a, b) => {
+            const pA = parseFloat(a.getAttribute('data-price'));
+            const pB = parseFloat(b.getAttribute('data-price'));
+            return sortOrder === 'asc' ? pA - pB : pB - pA;
+        });
+
+        books.forEach(book => bookList.appendChild(book));
+        noResultMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    [searchInput, categoryFilter, priceSegment].forEach(el => el.addEventListener('input', applyFilters));
+
+    sortPriceBtn.addEventListener('click', () => {
+        const currentSort = sortPriceBtn.getAttribute('data-sort');
+        if (currentSort === 'asc') {
+            sortPriceBtn.setAttribute('data-sort', 'desc');
+            sortPriceBtn.innerHTML = '<i class="bi bi-sort-numeric-up-alt fs-5 me-2"></i> Giá giảm';
+        } else {
+            sortPriceBtn.setAttribute('data-sort', 'asc');
+            sortPriceBtn.innerHTML = '<i class="bi bi-sort-numeric-down fs-5 me-2"></i> Giá tăng';
+        }
+        applyFilters();
+    });
+
+    // ==========================================
+    // 2. REAL-TIME ĐỒNG BỘ: SỐ LƯỢNG GIỎ HÀNG VÀ KHO SÁCH
+    // ==========================================
+    setInterval(function() {
+        fetch('/api/check-status')
+            .then(response => {
+                if (response.redirected && response.url.includes('login')) window.location.href = response.url;
+                return response.text();
+            })
+            .then(status => {
+                if (status === 'locked') window.location.href = '/login?locked';
+            }).catch(e => {});
+    }, 2000);
+
+    setInterval(function() {
+        fetch('/home')
+            .then(response => response.text())
+            .then(html => {
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(html, 'text/html');
+
+                // A. CẬP NHẬT REALTIME CHO ICON GIỎ HÀNG (Sẽ tự động nhảy số khi thêm/bớt hàng)
+                let newCartQtyEl = doc.getElementById('cart-qty-hidden');
+                let headerCartBadge = document.getElementById('headerCartBadge');
+
+                if (newCartQtyEl && headerCartBadge) {
+                    let newQty = newCartQtyEl.textContent.trim();
+                    if (headerCartBadge.innerText !== newQty) {
+                        headerCartBadge.innerText = newQty;
+                        // Hiệu ứng nảy nhẹ khi số lượng thay đổi
+                        headerCartBadge.classList.add('animate-bounce');
+                        setTimeout(() => headerCartBadge.classList.remove('animate-bounce'), 500);
+                    }
+                }
+
+                // B. CẬP NHẬT KHO SÁCH MÀ KHÔNG GÂY NHÁY
+                let newSignatureEl = doc.getElementById('data-signature');
+                let currentSignatureEl = document.getElementById('data-signature');
+                let newSig = newSignatureEl ? newSignatureEl.textContent.trim() : "";
+                let curSig = currentSignatureEl ? currentSignatureEl.textContent.trim() : "";
+
+                if (newSig !== curSig) {
+                    let newBookList = doc.getElementById('book-list');
+                    let currentBookList = document.getElementById('book-list');
+                    if (newBookList && currentBookList) {
+                        let newBooks = newBookList.querySelectorAll('.book-item');
+                        let currentBooks = currentBookList.querySelectorAll('.book-item');
+
+                        if (newBooks.length !== currentBooks.length) {
+                            currentBookList.innerHTML = newBookList.innerHTML;
+                            applyFilters();
+                        } else {
+                            newBooks.forEach(newBook => {
+                                let id = newBook.getAttribute('data-id');
+                                let newQty = newBook.getAttribute('data-qty');
+                                let currentBook = currentBookList.querySelector(`.book-item[data-id='${id}']`);
+                                if (currentBook && currentBook.getAttribute('data-qty') !== newQty) {
+                                    currentBook.innerHTML = newBook.innerHTML;
+                                    currentBook.setAttribute('data-qty', newQty);
+                                }
+                            });
+                        }
+                        if (currentSignatureEl) { currentSignatureEl.textContent = newSig; }
+                    }
+                }
+
+                // C. CẬP NHẬT THỂ LOẠI
+                let newCatSelect = doc.getElementById('categoryFilter');
+                let currentCatSelect = document.getElementById('categoryFilter');
+                if (newCatSelect && currentCatSelect && newCatSelect.innerHTML !== currentCatSelect.innerHTML) {
+                    let savedValue = currentCatSelect.value;
+                    currentCatSelect.innerHTML = newCatSelect.innerHTML;
+                    currentCatSelect.value = savedValue;
+                }
+            })
+            .catch(err => console.error('Lỗi realtime:', err));
+    }, 2000);
+</script>
+</body>
+</html>
