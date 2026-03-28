@@ -18,4 +18,9 @@ public class Role {
 
     @ManyToMany(mappedBy = "roles")
     private List<User> users;
+
+    // Bổ sung hàm Getter thủ công để sửa lỗi biên dịch trên GitHub Actions
+    public String getName() {
+        return name;
+    }
 }
