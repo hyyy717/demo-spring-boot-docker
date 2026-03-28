@@ -1,30 +1,28 @@
-name: Deploy Spring Boot to Docker Hub
+name: Deploy Bookstore to Slot 8
 
 on:
   push:
-    branches: [ "main" ] # Kích hoạt khi có code mới đẩy lên nhánh main
+    branches: [ "main" ]
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest # Chạy trên máy ảo Ubuntu
-
+    runs-on: ubuntu-latest
     steps:
-      # 1. Action lấy code từ GitHub
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Action tự động đăng nhập Docker Hub bằng Secrets đã tạo
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3. Action tự động Build Image từ Dockerfile và Push lên Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Tìm Dockerfile ở thư mục gốc
+          context: .
           push: true
-          # Đặt tên Image theo định dạng: ten_dang_nhap/ten_ung_dung:tag
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/demo-spring-boot:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/web-ban-sach:latest
+
+      - name: Call Webhook to Deploy on Slot 8
+        run: curl -X POST ${{ secrets.DEPLOY_URL }}

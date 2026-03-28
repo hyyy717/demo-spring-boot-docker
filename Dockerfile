@@ -5,9 +5,10 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Buoc 2: Chay ung dung voi Java 25
+# Buoc 2: Chay ung dung voi Java 25 tren cong 80
 FROM eclipse-temurin:25-jdk
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8080
+ENV SERVER_PORT=80
+EXPOSE 80
 ENTRYPOINT ["java", "-jar", "app.jar"]
